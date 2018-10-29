@@ -1,0 +1,124 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC, Subnets Public and Private"
+
+##################################
+# this block set the require paramter to be passed to the template.
+##################################
+Parameters:
+  VpcSubnetCidrs:
+    Description: "CIDR block for the VPC" # by command paramenter as example '--parameter-overrides VpcSubnetCidrs="10.0.0.0/16"'
+    Type: "String"
+
+Resources:
+  Vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcSubnetCidrs
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      Tags:
+      - Key: Name
+        Value: !Ref "AWS::StackName"   # by command parameter '--stack-name StackName-Of-Your-Choice'
+
+##################################
+# this block creates 2 public subnets under the range /24 (Fn::Cidr).
+##################################
+  subnetPublicA:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Select [ 0, !Cidr [ !GetAtt Vpc.CidrBlock, 4, 8 ]]
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet A
+      - Key: Scope
+        Value: public
+      VpcId: !Ref Vpc
+
+  subnetPublicB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Select [ 1, !Cidr [ !GetAtt Vpc.CidrBlock, 4, 8 ]]
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet B
+      - Key: Scope
+        Value: public
+      VpcId: !Ref Vpc
+
+##################################
+# this block creates 2 private subnets under the range /24 (Fn::Cidr).
+##################################
+  subnetPrivateA:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Select [ 2, !Cidr [ !GetAtt Vpc.CidrBlock, 4, 8 ]]
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: Private Subnet A
+      - Key: Scope
+        Value: private
+      VpcId: !Ref Vpc
+
+  subnetPrivateB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Select [ 3, !Cidr [ !GetAtt Vpc.CidrBlock, 4, 8 ]]
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: Private Subnet B
+      - Key: Scope
+        Value: private
+      VpcId: !Ref Vpc
+
+##################################
+# this block exports the information of the VPC, Subnets.
+##################################
+Outputs:
+  # VPC ID
+  VpcId:
+      Description : "VPC ID"
+      Value:  !Ref Vpc
+      Export:
+        Name: !Sub ${AWS::StackName}-VpcId
+
+# VPC CIDR block
+  VpcCidrBlock:
+      Description : "VPC CIDR block"
+      Value:  !GetAtt Vpc.CidrBlock
+      Export:
+        Name: !Sub ${AWS::StackName}-VpcCidrBlock
+
+# Public Subnets
+  PublicSubnetAId:
+      Description : "Public Subnet A ID"
+      Value:  !Ref subnetPublicA
+      Export:
+        Name: !Sub ${AWS::StackName}-PublicSubnetAId
+
+  PublicSubnetBId:
+      Description : "Public Subnet B ID"
+      Value:  !Ref subnetPublicB
+      Export:
+        Name: !Sub ${AWS::StackName}-PublicSubnetBId
+
+  # Private Subnets
+  subnetPrivateAIb:
+      Description : "Private Subnet A ID"
+      Value:  !Ref subnetPrivateA
+      Export:
+        Name: !Sub ${AWS::StackName}-subnetPrivateAIb
+
+  subnetPrivateBId:
+      Description : "Private Subnet B ID"
+      Value:  !Ref subnetPrivateB
+      Export:
+        Name: !Sub ${AWS::StackName}-subnetPrivateBId
