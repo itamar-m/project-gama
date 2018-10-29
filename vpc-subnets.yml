@@ -3,14 +3,17 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC, Subnets Public and Private"
 
 ##################################
-# this block set the require paramter to be passed to the template
+# this block sets the require parameter to be passed to the template.
 ##################################
 Parameters:
   VpcSubnetCidrs:
-    Description: "CIDR block for the VPC" # by command paramenter as example '--parameter-overrides VpcSubnetCidrs="10.0.0.0/16"'
+    Description: "CIDR block for the VPC" # by command paramenter as example '--parameter-overrides VpcSubnetCidrs="10.0.0.0/16"'.
     Type: "String"
 
 Resources:
+##################################
+# this block creates a VPC setting its CIDR block with the paramter passed as argument from CloudFormation command.
+##################################
   Vpc:
     Type: "AWS::EC2::VPC"
     Properties:
@@ -19,7 +22,7 @@ Resources:
       EnableDnsHostnames: True
       Tags:
       - Key: Name
-        Value: !Ref "AWS::StackName"   # by command parameter '--stack-name StackName-Of-Your-Choice'
+        Value: !Ref "AWS::StackName"   # by command parameter '--stack-name StackName-Of-Your-Choice'.
 
 ##################################
 # this block creates 2 public subnets under the range /24 (Fn::Cidr).
@@ -80,7 +83,7 @@ Resources:
       VpcId: !Ref Vpc
 
 ##################################
-# this block exports the information of the VPC, Subnets.
+# this block exports the information of the VPC, Subnets for another AWS CloudFormation templates usage.
 ##################################
 Outputs:
   # VPC ID
@@ -111,13 +114,13 @@ Outputs:
         Name: !Sub ${AWS::StackName}-PublicSubnetBId
 
   # Private Subnets
-  subnetPrivateAIb:
+  PrivateSubnetAId:
       Description : "Private Subnet A ID"
       Value:  !Ref subnetPrivateA
       Export:
         Name: !Sub ${AWS::StackName}-subnetPrivateAIb
 
-  subnetPrivateBId:
+  PrivateSubnetBId:
       Description : "Private Subnet B ID"
       Value:  !Ref subnetPrivateB
       Export:

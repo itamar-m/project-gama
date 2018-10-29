@@ -1,0 +1,76 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Internet Gateway and Route Table for internet traffic over public subnets"
+
+##################################
+# this block sets the require parameter to be passed to the template.
+##################################
+Parameters:
+  NetworkStack:
+    Type: "String"
+    Description: "Network stack name to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+Resources:
+##################################
+# this block creates the Internet Gateway, and in sequence it attaches to the corresponding VPC.
+##################################
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Ref AWS::StackName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId:
+        Fn::ImportValue:              # Imports data from Outputs of other AWS CloudFormation templates.
+          !Sub ${NetworkStack}-VpcId  # Concatenates the string value to set the VPC ID which will have the Internet Gateway attached.
+
+  ##################################
+  # this block creates a route table to be used by the public subnets, and to be ass the Internet Gateway and in sequence it gets attached to the corresponding VPC.
+  ##################################
+  publicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-VpcId # This sets the VPC ID which will have the Route Table.
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      - Key: Scope
+        Value: public
+
+
+##################################
+# this block associates the public route table to the 2 public subnets.
+##################################
+  publicSubnetRouteTableAssociationA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref publicRouteTable
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-PublicSubnetAId
+
+  publicSubnetRouteTableAssociationB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref publicRouteTable
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-PublicSubnetBId
+
+##################################
+# this creates the public route to internet by setting the CIDR block destination, corresponding Internet Gateway and the route table associated.
+##################################
+  routeToInternet:
+    DependsOn: InternetGatewayAttachment  # This statement forces/ensures that this route will be created only after the Internet Gateway is fully created.
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref publicRouteTable
