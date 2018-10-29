@@ -2,10 +2,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC, Subnets Public and Private"
 
+Parameters:
 ##################################
 # this block sets the require parameter to be passed to the template.
 ##################################
-Parameters:
   VpcSubnetCidrs:
     Description: "CIDR block for the VPC" # by command paramenter as example '--parameter-overrides VpcSubnetCidrs="10.0.0.0/16"'.
     Type: "String"
@@ -118,7 +118,7 @@ Outputs:
       Description : "Private Subnet A ID"
       Value:  !Ref subnetPrivateA
       Export:
-        Name: !Sub ${AWS::StackName}-subnetPrivateAIb
+        Name: !Sub ${AWS::StackName}-subnetPrivateAId
 
   PrivateSubnetBId:
       Description : "Private Subnet B ID"

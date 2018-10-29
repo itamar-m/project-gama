@@ -7,10 +7,12 @@ This project will demonstrate the use of the AWS CloudFormation service to effic
 - The file <i>internet-layer.yml</i> creates the Internet Gateway, and sets it to the VPC. Then creates a public route table, and associates it to the 2 public subnets. Finally, creates a public route to the internet. Some information at this state is imported from the previous AWS CloudFormation Template above.
 
 ### Commands
-- Deploy the VPC and Subnets
+- Deploy the VPC and Subnets.
   - <i>aws cloudformation deploy --stack-name kbulix-network --template-file ./vpc-subnets.yml --parameter-overrides VpcSubnetCidrs="10.0.0.0/16"</i>
 - Deploy the Internet Gateway and Public Route Tables.
-  - <i>aws cloudformation  deploy  --stack-name kbulix-internet-layer --template-file ./internet-layer.yml --parameter-overrides NetworkStack=kbulix-network</i>
+  - <i>aws cloudformation  deploy  --stack-name kbulix-public-layer --template-file ./public-layer.yml --parameter-overrides NetworkStack=kbulix-network</i>
+- Deploy the NAT Gateway for the private subnets access internet.
+  - <i>aws cloudformation  deploy  --stack-name kbulix-nat-gw --template-file ./nat-gw.yml --parameter-overrides NetworkStack=kbulix-network</i>
 
-### References:
+### References
   - [AWS CloudFormation user guide] (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)

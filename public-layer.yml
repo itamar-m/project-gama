@@ -2,10 +2,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Internet Gateway and Route Table for internet traffic over public subnets"
 
+Parameters:
 ##################################
 # this block sets the require parameter to be passed to the template.
 ##################################
-Parameters:
   NetworkStack:
     Type: "String"
     Description: "Network stack name to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
@@ -30,7 +30,7 @@ Resources:
           !Sub ${NetworkStack}-VpcId  # Concatenates the string value to set the VPC ID which will have the Internet Gateway attached.
 
   ##################################
-  # this block creates a route table to be used by the public subnets, and to be ass the Internet Gateway and in sequence it gets attached to the corresponding VPC.
+  # this block creates a route table to be used by the public subnets, and in sequence it gets attached to the corresponding VPC.
   ##################################
   publicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -43,7 +43,6 @@ Resources:
         Value: Public Route Table
       - Key: Scope
         Value: public
-
 
 ##################################
 # this block associates the public route table to the 2 public subnets.

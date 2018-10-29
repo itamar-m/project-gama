@@ -1,0 +1,73 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "NAT Gateway, and Route Table for private subnets egress intenet traffic"
+
+Parameters:
+##################################
+# this block sets the require parameter to be passed to the template.
+##################################
+  NetworkStack:
+    Type: "String"
+    Description: "Network stack name to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+Resources:
+##################################
+# this block sets the Nat Gateway with the required Elastic IP. Plus associating the subnet which will houses it.
+##################################
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIP.AllocationId
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-PublicSubnetAId
+
+  ElasticIP: # Elastic IP address setup to be used by the NAT Gateway.
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  ##################################
+  # this block creates a route table to be used by the private subnets, and in sequence it gets attached to the corresponding VPC.
+  ##################################
+  privateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-VpcId
+      Tags:
+      - Key: Name
+        Value: Private Route Table
+      - Key: Scope
+        Value: private
+
+  ##################################
+  # this block associates the private Route Table to the 2 private subnets.
+  ##################################
+  privateSubnetRouteTableAssociationA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref privateRouteTable
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-subnetPrivateAId
+
+  privateSubnetRouteTableAssociationB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref privateRouteTable
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-subnetPrivateBId
+
+##################################
+# this creates the public route to internet for the private Route Table by setting the CIDR block destination, corresponding Internet Gateway and the route table associated.
+##################################
+  privateRouteToInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: privateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
