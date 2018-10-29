@@ -6,4 +6,4 @@ This project will demonstrate the use of the AWS CloudFormation service to effic
 - The file <i>vpc-subnets.yml</i> contains the VPC and Subnets, along with use of the Intrinsic Function <i>!Cidr/i> to generate the CIDR blocks for each subnet.
 
 - References:
-- [AWS CloudFormation user guide] (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
+  - [AWS CloudFormation user guide] (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
