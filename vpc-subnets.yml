@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC, Subnets Public and Private"
 
 ##################################
-# this block set the require paramter to be passed to the template.
+# this block set the require paramter to be passed to the template
 ##################################
 Parameters:
   VpcSubnetCidrs:
