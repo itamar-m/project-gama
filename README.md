@@ -9,6 +9,8 @@ This project will demonstrate the use of the AWS CloudFormation service to effic
 ### Commands
 - Deploy the VPC and Subnets
   - <i>aws cloudformation deploy --stack-name kbulix-network --template-file ./vpc-subnets.yml --parameter-overrides VpcSubnetCidrs="10.0.0.0/16"</i>
+- Deploy the Internet Gateway and Public Route Tables.
+  - <i>aws cloudformation  deploy  --stack-name kbulix-internet-layer --template-file ./internet-layer.yml --parameter-overrides NetworkStack=kbulix-network</i>
 
 ### References:
   - [AWS CloudFormation user guide] (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
