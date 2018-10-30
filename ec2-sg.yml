@@ -46,6 +46,9 @@ Resources:
         - Key: Name
           Value: !Ref "AWS::StackName"
 
+##################################
+# this block creates the EC2 instance that will houses the AMI (node.js application).
+##################################
   Ec2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -59,6 +62,9 @@ Resources:
           !Sub ${NetworkStack}-PublicSubnetAId
       Tenancy: default
 
+##################################
+# this block allocates Elastic IP address to the EC2 instance.
+##################################
   Ec2PublicIPAddress:
     Type: AWS::EC2::EIP
     Properties:
