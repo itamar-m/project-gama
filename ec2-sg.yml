@@ -1,0 +1,65 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "EC2 instance and Security Group"
+
+Parameters:
+##################################
+# this block sets the require parameter to be passed to the template.
+##################################
+  NetworkStack:
+    Type: "String"
+    Description: "Network stack name to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+  ImageAIM:
+    Type: "String"
+    Description: "IAM Image to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+  EC2KeyPair:
+    Type: "String"
+    Description: "Amazon EC2 key pair." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+Resources:
+##################################
+# this block sets Security Group for the EC2 Instance, Ingress and Egress rules.
+##################################
+  Ec2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref "AWS::StackName"
+      GroupDescription: !Ref "AWS::StackName"
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8080
+        ToPort: 8080
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ImageAIM
+      InstanceType: t2.micro
+      KeyName: !Ref EC2KeyPair
+      SecurityGroupIds:
+        - !Ref Ec2SecurityGroup
+      SubnetId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-PublicSubnetAId
+      Tenancy: default
+
+  Ec2PublicIPAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+     InstanceId: !Ref Ec2Instance
