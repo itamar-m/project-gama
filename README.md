@@ -4,7 +4,8 @@
 This project will demonstrate the use of the AWS CloudFormation service to efficiently deploy infrastructure into AWS. In order to do that couple AWS CloudFormation Templates are requires to deploy AWS Network and Compute components.
 
 - The file <i>vpc-subnets.yml</i> creates the VPC and Subnets, along with use of the Intrinsic Function <i>!Cidr</i> to generate the CIDR blocks for each subnet.
-- The file <i>internet-layer.yml</i> creates the Internet Gateway, and sets it to the VPC. Then creates a public route table, and associates it to the 2 public subnets. Finally, creates a public route to the internet. Some information at this state is imported from the previous AWS CloudFormation Template above.
+- The file <i>public-layer.yml</i> creates the Internet Gateway, and sets it to the VPC. Then creates a public route table, and associates it to the 2 public subnets. Finally, creates a public route to the internet. Some information at this state is imported from the previous AWS CloudFormation Template above.
+- The file<i>nat-gw.yml</i> has the code to create a NAT Gateway for the 2 private subnets access the internet for updates/patching. The NAT Gateway requires and Elastic IP address.
 
 ### Commands
 - Deploy the VPC and Subnets.
