@@ -1,0 +1,101 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Elastic Load Balancer and Security Group"
+
+Parameters:
+##################################
+# this block sets the require parameter to be passed to the template.
+##################################
+  NetworkStack:
+    Type: "String"
+    Description: "Network stack name to be applied." # by command paramenter as example '--parameter-overrides NetworkStack="CloudFormation-StackName"'
+
+  ApplicationStack:
+    Type: "String"
+    Description: "Application stack name to be applied." # by command paramenter as example '--parameter-overrides ApplicationStack="CloudFormation-StackName"'
+
+  LoadBalancerName:
+    Type: "String"
+    Description: "Name to be applied for the Load Balancer." # by command paramenter as example '--parameter-overrides LoadBalancername="LoadBalancer-Name"'
+
+Resources:
+##################################
+# this block sets the Elastic Load Balancer and associate to the corresponding public subnets.
+##################################
+  ELB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref LoadBalancerName
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref ElbSecurityGroup
+      Subnets:
+        - Fn::ImportValue:
+            !Sub ${NetworkStack}-PublicSubnetAId
+        - Fn::ImportValue:
+            !Sub ${NetworkStack}-PublicSubnetBId
+      Type: application
+
+  ElBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ELB
+      Port: 80 # ELB will listen on port 80, but the application running on the target group uses port 8080.
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ElBTargetGroup
+
+  ElBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: "/"
+      HealthCheckTimeoutSeconds: 2
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      Name: kbulix-targetgroup
+      Port: 8080
+      Protocol: HTTP
+      Targets:
+        - Id:
+            Fn::ImportValue:
+              !Sub ${ApplicationStack}-Ec2IDInstance1
+          Port: 8080
+        - Id:
+            Fn::ImportValue:
+              !Sub ${ApplicationStack}-Ec2IDInstance2
+          Port: 8080
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '20'
+      UnhealthyThresholdCount: 3
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-VpcId
+
+##################################
+# this block sets Security Group for the Elastic Load Balance, Ingress and Egress rules.
+##################################
+  ElbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref "AWS::StackName"
+      GroupDescription: !Ref "AWS::StackName"
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkStack}-VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
